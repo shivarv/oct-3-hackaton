@@ -1,0 +1,6 @@
+# Dev override: publishes MongoDB on localhost so a backend running outside Docker can reach it.
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d mongo
+services:
+  mongo:
+    ports:
+      - "127.0.0.1:27017:27017"

@@ -1,0 +1,49 @@
+services:
+  mongo:
+    image: mongo:7
+    # --quiet stops mongod logging every connection open/close (e.g. from the healthcheck).
+    command: ["mongod", "--quiet"]
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?set in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set in .env}
+      MONGO_DB: ${MONGO_DB:-linkedin_mock}
+      MONGO_APP_USER: ${MONGO_APP_USER:?set in .env}
+      MONGO_APP_PASSWORD: ${MONGO_APP_PASSWORD:?set in .env}
+    volumes:
+      - mongo-data:/data/db
+      - ./mongo/init:/docker-entrypoint-initdb.d:ro
+    # Not published to the host; only the backend talks to Mongo on the internal network.
+    healthcheck:
+      # A bare TCP check: unlike a mongosh ping, it opens no session, so mongod logs nothing.
+      test: ["CMD", "bash", "-c", "echo > /dev/tcp/127.0.0.1/27017"]
+      # Check quickly (every 2s) while starting up, then only every 30s once healthy.
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 60s
+      start_interval: 2s
+
+  backend:
+    build: ./backend
+    restart: on-failure
+    environment:
+      MONGO_URI: mongodb://${MONGO_APP_USER}:${MONGO_APP_PASSWORD}@mongo:27017/${MONGO_DB:-linkedin_mock}?authSource=${MONGO_DB:-linkedin_mock}
+      MONGO_DB: ${MONGO_DB:-linkedin_mock}
+      SEED_DATA: ${SEED_DATA:-true}
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  frontend:
+    build: ./frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "127.0.0.1:8080:80"
+
+volumes:
+  mongo-data:
