@@ -1,0 +1,39 @@
+name: secaudit
+
+services:
+  mongo:
+    image: mongo:8.0
+    command: ["mongod", "--config", "/etc/mongod.conf"]
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_ROOT_USER:?set in .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_ROOT_PASSWORD:?set in .env}
+      SECAUDIT_APP_USER: ${SECAUDIT_APP_USER:-secaudit_app}
+      SECAUDIT_APP_PASSWORD: ${SECAUDIT_APP_PASSWORD:?set in .env}
+    volumes:
+      - ../mongo/mongod.conf:/etc/mongod.conf:ro
+      - ../mongo/init:/docker-entrypoint-initdb.d:ro
+      - mongo-data:/data/db
+    ports:
+      - "127.0.0.1:27017:27017"   # loopback only
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      retries: 5
+
+  backend:
+    build: ../backend
+    env_file: ../.env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    ports:
+      - "127.0.0.1:8000:8000"
+
+  frontend:
+    build: ../frontend
+    depends_on: [backend]
+    ports:
+      - "127.0.0.1:5173:80"
+
+volumes:
+  mongo-data:
