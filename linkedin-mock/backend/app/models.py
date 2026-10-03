@@ -110,6 +110,7 @@ class Comment(BaseModel):
     author: UserSummary
     text: str
     created_at: datetime
+    edited_at: datetime | None = None
 
 
 class Post(BaseModel):

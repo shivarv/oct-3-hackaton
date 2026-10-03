@@ -74,5 +74,6 @@ export interface Post {
 export type View =
   | { page: "feed" }
   | { page: "network" }
+  | { page: "members" }
   | { page: "settings" }
   | { page: "profile"; userId: string };

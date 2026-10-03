@@ -71,6 +71,7 @@ The acting member always comes from the session, never from the request body.
 | GET    | `/api/auth/me`                         | the logged-in member                          |
 | GET    | `/api/users`                           |                                               |
 | GET    | `/api/users/{id}`                      |                                               |
+| GET    | `/api/users/by-username/{username}`    | all stored fields except the password hash; no login needed |
 | PATCH  | `/api/users/me`                        | any profile fields; `null` clears optional ones |
 | POST   | `/api/users/me/connections`            | `{target_id}`                                 |
 | DELETE | `/api/users/me/connections/{id}`       |                                               |
@@ -83,6 +84,8 @@ The acting member always comes from the session, never from the request body.
 | DELETE | `/api/posts/{id}`                      | author only                                   |
 | POST   | `/api/posts/{id}/like`                 | toggles                                       |
 | POST   | `/api/posts/{id}/comments`             | `{text}`                                      |
+| PATCH  | `/api/posts/{id}/comments/{commentId}` | `{text}` (any logged-in member)               |
+| PATCH  | `/api/posts/{id}/comments/{commentId}/own` | `{text}` (comment author only)            |
 
 ## Layout
 

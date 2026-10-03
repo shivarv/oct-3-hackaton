@@ -5,6 +5,7 @@ import type { User, View } from "./types";
 import { Navbar } from "./components/Navbar";
 import { AuthPage } from "./pages/AuthPage";
 import { FeedPage } from "./pages/FeedPage";
+import { MembersPage } from "./pages/MembersPage";
 import { NetworkPage } from "./pages/NetworkPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { SettingsPage } from "./pages/SettingsPage";
@@ -37,7 +38,8 @@ function Shell({ me }: { me: User }) {
         <>
           {view.page === "feed" && <FeedPage me={me} users={users.data} onNavigate={navigate} />}
           {view.page === "network" && <NetworkPage me={me} users={users.data} onNavigate={navigate} />}
-          {view.page === "settings" && <SettingsPage me={me} />}
+          {view.page === "members" && <MembersPage me={me} users={users.data} onNavigate={navigate} />}
+          {view.page === "settings" &&<SettingsPage me={me} />}
           {view.page === "profile" && (
             <ProfilePage me={me} users={users.data} userId={view.userId} onNavigate={navigate} />
           )}

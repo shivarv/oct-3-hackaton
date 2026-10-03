@@ -4,11 +4,12 @@ import re
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from datetime import UTC, datetime
-from typing import Annotated, Any
+from typing import Annotated, Any, Literal
 
 from bson import ObjectId
 from bson.errors import InvalidId
-from fastapi import Cookie, FastAPI, HTTPException, Response, UploadFile
+from fastapi import Cookie, FastAPI, HTTPException, Query, Response, UploadFile
+from fastapi.encoders import jsonable_encoder
 from pymongo import ReturnDocument
 from pymongo.errors import DuplicateKeyError
 
@@ -129,6 +130,7 @@ async def posts_out(docs: list[Doc]) -> list[Post]:
                     author=summary(c["author_id"]),
                     text=c["text"],
                     created_at=c["created_at"],
+                    edited_at=c.get("edited_at"),
                 )
                 for c in d.get("comments", [])
             ],
@@ -205,6 +207,32 @@ async def whoami(me: CurrentUser) -> User:
 
 # ---------- members ----------
 
+# Fields a caller may pick with ?fields=. password_hash is deliberately absent, and FastAPI
+# rejects anything not listed (including "$" operator keys) with a 422.
+UserField = Literal[
+    "name",
+    "username",
+    "headline",
+    "location",
+    "about",
+    "phone",
+    "age",
+    "gender",
+    "date_of_birth",
+    "resume",
+    "connections",
+    "created_at",
+    "password_hash"
+]
+FieldsQuery = Annotated[list[UserField] | None, Query()]
+
+
+def user_projection(fields: list[UserField] | None) -> Doc:
+    """Include only the requested fields (plus _id), or everything except the password hash."""
+    if fields:
+        return dict.fromkeys(fields, 1)
+    return {"password_hash": 0}
+
 
 @app.get("/api/users", response_model=list[User])
 async def list_users(me: CurrentUser) -> list[User]:
@@ -212,9 +240,31 @@ async def list_users(me: CurrentUser) -> list[User]:
     return [user_out(d, me) for d in docs]
 
 
+# No login required. Returns every stored field except the password hash, including private ones.
+# Declared before /api/users/{user_id} so "all" is not treated as a user id.
+@app.get("/api/users/all")
+async def list_all_users(fields: FieldsQuery = None) -> list[Doc]:
+    docs = await mongo.db.users.find({}, user_projection(fields)).sort("name", 1).to_list(500)
+    for doc in docs:
+        doc["id"] = doc.pop("_id")
+    result: list[Doc] = jsonable_encoder(docs, custom_encoder={ObjectId: str})
+    return result
+
+
 @app.get("/api/users/{user_id}", response_model=User)
 async def get_user(user_id: str, me: CurrentUser) -> User:
     return user_out(await get_user_doc(user_id), me)
+
+
+# No login required. Returns every stored field except the password hash, including private ones.
+@app.get("/api/users/by-username/{username}")
+async def get_user_by_username(username: str, fields: FieldsQuery = None) -> Doc:
+    doc = await mongo.db.users.find_one({"username": username.lower()}, user_projection(fields))
+    if doc is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    doc["id"] = doc.pop("_id")
+    result: Doc = jsonable_encoder(doc, custom_encoder={ObjectId: str})
+    return result
 
 
 @app.patch("/api/users/me", response_model=User)
@@ -386,3 +436,43 @@ async def add_comment(post_id: str, body: CommentIn, me: CurrentUser) -> Post:
     if updated is None:
         raise HTTPException(status_code=404, detail="Post not found")
     return (await posts_out([updated]))[0]
+
+
+async def edit_comment(
+    post_id: str, comment_id: str, text: str, me: Doc, author_only: bool
+) -> Post:
+    match: Doc = {"_id": to_oid(comment_id)}
+    if author_only:
+        # $elemMatch makes the id and author conditions apply to the same array element.
+        match["author_id"] = me["_id"]
+    updated = await mongo.db.posts.find_one_and_update(
+        {"_id": to_oid(post_id), "comments": {"$elemMatch": match}},
+        {
+            "$set": {
+                "comments.$.text": text,
+                "comments.$.edited_at": now(),
+                "comments.$.edited_by": me["_id"],
+            }
+        },
+        return_document=ReturnDocument.AFTER,
+    )
+    if updated is None:
+        post = await get_post_doc(post_id)
+        if author_only and any(c["_id"] == match["_id"] for c in post.get("comments", [])):
+            raise HTTPException(status_code=403, detail="Only the author can edit this comment")
+        raise HTTPException(status_code=404, detail="Comment not found")
+    return (await posts_out([updated]))[0]
+
+
+# Any logged-in member can edit any comment; there is deliberately no author check here.
+@app.patch("/api/posts/{post_id}/comments/{comment_id}", response_model=Post)
+async def update_comment(post_id: str, comment_id: str, body: CommentIn, me: CurrentUser) -> Post:
+    return await edit_comment(post_id, comment_id, body.text, me, author_only=False)
+
+
+# Only the member who wrote the comment can edit it.
+@app.patch("/api/posts/{post_id}/comments/{comment_id}/own", response_model=Post)
+async def update_own_comment(
+    post_id: str, comment_id: str, body: CommentIn, me: CurrentUser
+) -> Post:
+    return await edit_comment(post_id, comment_id, body.text, me, author_only=True)

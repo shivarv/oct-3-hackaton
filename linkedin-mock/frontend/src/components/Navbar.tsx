@@ -3,7 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api, ME_KEY } from "../api";
 import type { User, View } from "../types";
 import { Avatar } from "./Avatar";
-import { HomeIcon, LogOutIcon, SettingsIcon, UserIcon, UsersIcon } from "./Icons";
+import { GridIcon, HomeIcon, LogOutIcon, SettingsIcon, UserIcon, UsersIcon } from "./Icons";
 
 interface Props {
   me: User;
@@ -92,6 +92,7 @@ export function Navbar({ me, view, onNavigate }: Props) {
         <nav className="nav-tabs">
           {tab({ page: "feed" }, "Home", HomeIcon, view.page === "feed")}
           {tab({ page: "network" }, "Network", UsersIcon, view.page === "network")}
+          {tab({ page: "members" }, "Members", GridIcon, view.page === "members")}
           {tab({ page: "profile", userId: me.id }, "Profile", UserIcon, view.page === "profile" && view.userId === me.id)}
           {tab({ page: "settings" }, "Settings", SettingsIcon, view.page === "settings")}
         </nav>

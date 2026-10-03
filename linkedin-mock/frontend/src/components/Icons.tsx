@@ -42,6 +42,14 @@ export const UsersIcon = icon(
     <path d="M17 14.6a5 5 0 0 1 4.5 5" />
   </>,
 );
+export const GridIcon = icon(
+  <>
+    <rect x="3" y="3" width="7" height="7" rx="1" />
+    <rect x="14" y="3" width="7" height="7" rx="1" />
+    <rect x="3" y="14" width="7" height="7" rx="1" />
+    <rect x="14" y="14" width="7" height="7" rx="1" />
+  </>,
+);
 export const UserIcon = icon(
   <>
     <circle cx="12" cy="8" r="4" />
