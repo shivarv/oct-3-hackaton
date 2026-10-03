@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Security Incident Dashboard – Layout Spec</title>
+<style>
+:root{--bg:#f4f5f7;--card:#fff;--tx:#1b1f27;--mu:#667085;--bd:#e2e5ea;--ac:#2f6fed;--rd:#d92d20;--am:#b54708;--gn:#067647;--tag:#eef2ff;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#14161a;--card:#1e2127;--tx:#eceff4;--mu:#9aa3b2;--bd:#2d323b;--ac:#6b9bff;--rd:#ff6b5e;--am:#f5a524;--gn:#4cd08a;--tag:#262b3a}}
+:root[data-theme="dark"]{--bg:#14161a;--card:#1e2127;--tx:#eceff4;--mu:#9aa3b2;--bd:#2d323b;--ac:#6b9bff;--rd:#ff6b5e;--am:#f5a524;--gn:#4cd08a;--tag:#262b3a}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:14px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+.wrap{max-width:1200px;margin:0 auto;padding:16px}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;position:relative}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--mu);margin:0 0 10px}
+.tag{position:absolute;top:-9px;right:12px;background:var(--tag);color:var(--ac);border:1px solid var(--bd);font-size:11px;padding:1px 8px;border-radius:99px}
+.banner{border-left:6px solid var(--am);margin-bottom:16px}
+.top{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:center}
+.top b{font-size:20px}.mu{color:var(--mu);font-size:12px}
+.steps{display:flex;gap:4px;margin-top:12px;overflow-x:auto}
+.st{flex:1;min-width:110px;text-align:center;font-size:12px;padding:6px 4px;border-radius:8px;background:var(--bg);color:var(--mu);border:1px solid var(--bd)}
+.st.done{color:var(--gn)}.st.now{background:var(--am);color:#fff;font-weight:600;border-color:var(--am)}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.n{font-size:30px;font-weight:700}.n small{font-size:12px;font-weight:400;color:var(--mu)}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:16px}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.pill{display:inline-block;padding:1px 8px;border-radius:99px;font-size:12px;font-weight:600;border:1px solid currentColor}
+.rd{color:var(--rd)}.am{color:var(--am)}.gn{color:var(--gn)}
+dl{display:grid;grid-template-columns:130px 1fr;gap:6px 10px;margin:0}dt{color:var(--mu)}dd{margin:0}
+.tl{list-style:none;margin:0;padding:0}
+.tl li{display:grid;grid-template-columns:70px 90px 1fr;gap:8px;padding:7px 0;border-bottom:1px solid var(--bd);font-size:13px}
+.tl li:last-child{border:0}.k{font-size:11px;font-weight:600;text-transform:uppercase}
+.bar{height:8px;background:var(--bg);border-radius:9px;overflow:hidden;margin:6px 0}.bar i{display:block;height:100%;width:70%;background:var(--ac)}
+button{font:inherit;border:1px solid var(--bd);background:var(--card);color:var(--tx);border-radius:8px;padding:7px 12px;cursor:pointer}
+button.p{background:var(--ac);color:#fff;border-color:var(--ac)}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+textarea{width:100%;font:inherit;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:8px;padding:8px;margin-top:8px}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(420px,100%);background:var(--card);border-left:1px solid var(--bd);padding:16px;padding-top:calc(16px + env(safe-area-inset-top,0px));overflow:auto;transform:translateX(105%);transition:transform .25s;z-index:5;box-shadow:-8px 0 24px rgba(0,0,0,.2)}
+.drawer.open{transform:none}
+pre{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:8px;overflow-x:auto;font-size:12px;margin:6px 0}
+.fab{position:fixed;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));z-index:4}
+@media(max-width:860px){.cards{grid-template-columns:1fr 1fr}.grid{grid-template-columns:1fr}.tl li{grid-template-columns:60px 1fr}.tl li .k{display:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="panel banner"><span class="tag">1 · Top status banner</span>
+ <div class="top"><div><b>Fix being tested</b><div class="mu">Monitored app: <b>Customer Portal (prod)</b></div></div><div class="mu">Last update: 11:52:14 AM · live</div></div>
+ <div class="steps">
+  <div class="st done">✓ Monitoring</div><div class="st done">✓ Suspicious activity</div><div class="st done">✓ Confirmed incident</div><div class="st done">✓ Contained</div><div class="st now">Fix being tested</div><div class="st">Resolved</div>
+ </div>
+</div>
+
+<div class="cards">
+ <div class="panel"><span class="tag">2</span><h2>Open critical incidents</h2><div class="n rd">1</div><div class="mu">1 contained</div></div>
+ <div class="panel"><span class="tag">2</span><h2>Requests blocked</h2><div class="n">4,812</div><div class="mu">last 24h</div></div>
+ <div class="panel"><span class="tag">2</span><h2>Fixes awaiting review</h2><div class="n am">2</div><div class="mu">oldest 14 min</div></div>
+ <div class="panel"><span class="tag">2</span><h2>Application availability</h2><div class="n gn">99.9<small>%</small></div><div class="mu">no downtime this incident</div></div>
+</div>
+
+<div class="grid">
+ <div class="col">
+  <div class="panel"><span class="tag">3 · Main incident panel</span>
+   <h2>Incident INC-2041</h2>
+   <p style="margin:0 0 10px"><b>SQL injection attempts against login endpoint, followed by a successful request from one IP.</b></p>
+   <dl>
+    <dt>Severity</dt><dd><span class="pill rd">Critical</span></dd>
+    <dt>Affected endpoint</dt><dd>POST /api/v2/login</dd>
+    <dt>Affected account</dt><dd>svc-reporting</dd>
+    <dt>Affected files</dt><dd>exports/q3_customers.csv</dd>
+    <dt>Business impact</dt><dd>Possible exposure of customer contact records</dd>
+    <dt>Unauthorized access</dt><dd><span class="pill am">Under investigation</span> <span class="mu">(confirmed / not confirmed / investigating)</span></dd>
+   </dl>
+  </div>
+  <div class="panel"><span class="tag">4 · Live event timeline</span>
+   <h2>Live event timeline</h2>
+   <ul class="tl">
+    <li><span class="mu">11:52:02</span><span class="k gn">Test</span><span>Patch passed 41/42 tests; 1 retry running</span></li>
+    <li><span class="mu">11:49:30</span><span class="k am">Human</span><span>M. Rivera approved sandbox test</span></li>
+    <li><span class="mu">11:44:10</span><span class="k" style="color:var(--ac)">Agent</span><span>Drafted input-validation fix for /api/v2/login</span></li>
+    <li><span class="mu">11:41:55</span><span class="k" style="color:var(--ac)">Agent</span><span>Isolated svc-reporting session, rotated credentials</span></li>
+    <li><span class="mu">11:41:20</span><span class="k rd">Detect</span><span>Anomalous query pattern confirmed as attack</span></li>
+    <li><span class="mu">11:40:48</span><span class="k gn">Firewall</span><span>Rule FW-318 blocked 212 requests from 203.0.113.9</span></li>
+    <li><span class="mu">11:40:05</span><span class="k rd">Attack</span><span>Injection payload detected on /api/v2/login</span></li>
+   </ul>
+  </div>
+ </div>
+
+ <div class="col">
+  <div class="panel"><span class="tag">5 · AI response panel</span>
+   <h2>AI response</h2>
+   <div><b>Current task:</b> Verifying input-validation patch in sandbox</div>
+   <div class="bar"><i></i></div><div class="mu">Progress 70% · step 3 of 4</div>
+   <p><b>Evidence for decision</b></p>
+   <ul style="margin:0;padding-left:18px"><li>Payloads match known SQLi signatures (req-88213)</li><li>Unparameterized query found in login handler</li></ul>
+   <p><b>Proposed action:</b> Deploy parameterized query fix after review.</p>
+   <p class="am" style="margin:0"><b>Uncertainty:</b> Cannot yet confirm if exports/q3_customers.csv was read. Confidence 62%.</p>
+  </div>
+  <div class="panel"><span class="tag">6 · Human action panel</span>
+   <h2>Human action</h2>
+   <dl><dt>Assigned</dt><dd>M. Rivera, IT Security</dd><dt>Escalation</dt><dd><span class="pill gn">Not escalated</span></dd><dt>Next step</dt><dd>Review and approve patch</dd></dl>
+   <div class="row"><button class="p">Approve fix</button><button>Reject</button><button>Escalate</button></div>
+   <textarea rows="3" placeholder="Incident notes…"></textarea>
+  </div>
+ </div>
+</div>
+</div>
+
+<button class="fab p" id="ob">7 · Open evidence drawer</button>
+<aside class="drawer" id="dr"><span class="tag" style="position:static;display:inline-block;margin-bottom:8px">7 · Evidence drawer</span>
+ <div class="top"><b>Evidence</b><button id="cb">Close</button></div>
+ <h2 style="margin-top:14px">Logs &amp; IDs</h2>
+ <pre>11:40:05 WARN req-88213 POST /api/v2/login
+payload: ' OR 1=1 --
+src: 203.0.113.9</pre>
+ <div class="mu">Request IDs: req-88213, req-88219 · Firewall rule: FW-318</div>
+ <h2 style="margin-top:14px">Affected routes</h2><div>/api/v2/login · /api/v2/export</div>
+ <h2 style="margin-top:14px">Proposed code change</h2>
+ <pre>- db.query("SELECT * FROM users WHERE u='"+u+"'")
++ db.query("SELECT * FROM users WHERE u=$1",[u])</pre>
+ <h2 style="margin-top:14px">Verification</h2><div class="gn">41 passed</div><div class="am">1 retrying</div>
+</aside>
+<script>
+var d=document.getElementById('dr');
+document.getElementById('ob').onclick=function(){d.classList.add('open')};
+document.getElementById('cb').onclick=function(){d.classList.remove('open')};
+</script>
+</body>
+</html>
